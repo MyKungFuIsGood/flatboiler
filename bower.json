@@ -1,0 +1,19 @@
+{
+  "name": "Flatboiler",
+  "version": "1.0.0",
+  "authors": [
+    "Ben Smith <bsmith@lovecomm.net>"
+  ],
+  "description": "Flatboiler for scaffolding",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "src"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.4",
+    "jquery": "~2.1.3"
+  }
+}
