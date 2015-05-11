@@ -3,7 +3,7 @@
 <script>if (!window.jQuery) { document.write('<script src="/assets/js/plugins/jquery.min.js"><\/script>'); }</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/js/bootstrap.min.js"></script>
-<script>if $.fn.modal || document.write('<script src="/assets/js/plugins/bootstrap.min.js"><\/script>')</script>
+<script>$.fn.modal || document.write('<script src="/assets/js/plugins/bootstrap.min.js"><\/script>')</script>
 
 <!-- our javascript -->
 <script src="assets/js/main.js?v=8"></script>
