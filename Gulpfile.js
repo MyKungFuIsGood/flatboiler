@@ -59,6 +59,14 @@ gulp.task('lint', function() {
 // Concatenate & Minify JS
 gulp.task('scripts', function() {
 	return gulp.src( watchJS )
+	.pipe(plumber(function(error) {
+		gutil.log(
+			gutil.colors.red(error.message),
+			gutil.colors.yellow('\r\nOn line: '+error.line),
+			gutil.colors.yellow('\r\nCode Extract: '+error.extract)
+			);
+		this.emit('end');
+	}))
 	.pipe(concat('main.js'))
 	.pipe(gulp.dest( distJS ))
 	.pipe(uglify())
