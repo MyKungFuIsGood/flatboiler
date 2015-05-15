@@ -126,7 +126,7 @@ gulp.task('less', function() {
 
 
 gulp.task('iconfont', function(){
-	gulp.src(['_src/icons/svg/*.svg'])
+	return gulp.src(['_src/icons/svg/*.svg'])
 		.pipe(iconfont({ fontName: 'website-icons' }))
 		.on('codepoints', function(codepoints, options) {
 			gulp.src('_src/icons/iconfont.template')
@@ -179,6 +179,3 @@ gulp.task('watch', function() {
 	gulp.watch( watchJS , ['lint', 'scripts']);
 	gulp.watch( watchLESS , ['less']);
 });
-
-/* Run this first */
-gulp.task('init', ['vendor','iconfont', 'lint', 'scripts', 'less'] );

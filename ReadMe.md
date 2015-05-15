@@ -8,7 +8,8 @@ You need Node.js and Gulp installed globally.
 In the directory run:
 ```sh
 $ npm install
-$ gulp init
+$ gulp vendor
+$ gulp iconfont 
 ```
 
 ### Locations
