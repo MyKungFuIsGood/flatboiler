@@ -181,4 +181,4 @@ gulp.task('watch', function() {
 });
 
 /* Run this first */
-gulp.task('init', ['vendor', 'lint', 'scripts', 'less', 'iconfont'] );
+gulp.task('init', ['vendor','iconfont', 'lint', 'scripts', 'less'] );
