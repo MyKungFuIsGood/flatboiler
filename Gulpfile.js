@@ -12,21 +12,26 @@ var gulp = require('gulp');
 
 
 // Include Our Plugins
-var bower				= require('gulp-bower');
-var jshint			= require('gulp-jshint');
-var less				= require('gulp-less');
-var concat			= require('gulp-concat');
-var uglify			= require('gulp-uglify');
-var rename			= require('gulp-rename');
-var minifyCSS		= require('gulp-minify-css');
-var uncss				= require('gulp-uncss');
-var del					= require('del');
-var plumber			= require('gulp-plumber'); // error handling
-var consolidate	= require('gulp-consolidate'); // icon templating
-var iconfont		= require('gulp-iconfont'); // svg to iconfont
-var livereload	= require('gulp-livereload');
-var gutil				= require('gulp-util');
+var bower        = require('gulp-bower');
+var jshint       = require('gulp-jshint');
+var less         = require('gulp-less');
+var concat       = require('gulp-concat');
+var uglify       = require('gulp-uglify');
+var rename       = require('gulp-rename');
+var minifyCSS    = require('gulp-minify-css');
+var uncss        = require('gulp-uncss');
+var del          = require('del');
+var postcss      = require('gulp-postcss'); 
+var plumber      = require('gulp-plumber'); // error handling
+var consolidate  = require('gulp-consolidate'); // icon templating
+var iconfont     = require('gulp-iconfont'); // svg to iconfont
+var livereload   = require('gulp-livereload');
+var gutil        = require('gulp-util');
 
+var autoprefixer = require('autoprefixer-core');
+var mqpacker     = require('css-mqpacker');
+var csswring     = require('csswring');
+var focus 			 = require('postcss-focus');
 
 var watchJS = [
 	'_src/js/_scripts/*.js',
@@ -75,9 +80,15 @@ gulp.task('scripts', function() {
 	.pipe(livereload());
 });
 
-
 // Compile Our less
 gulp.task('less', function() {
+	var processors = [
+		autoprefixer({browsers: ['last 2 version']}),
+		focus,
+		mqpacker,
+		csswring
+	];
+
 	return gulp.src( '_src/less/main.less' )
 	.pipe(plumber(function(error) {
 		gutil.log(
@@ -89,6 +100,7 @@ gulp.task('less', function() {
 	}))
 	.pipe(less())
 	.pipe(minifyCSS())
+	.pipe(postcss( processors ))
 	.pipe(rename('main.min.css'))
 	.pipe(gulp.dest( distCSS ))
 	.pipe(livereload());
