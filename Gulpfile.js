@@ -1,8 +1,8 @@
 // Command List:
 // init			=> runs all commands to get boilerplate up and running
-// lint			=> checks js but will not throw errors or logs
 // scripts	=> uglifies js
 // less			=> uglifies less
+// uncss 		=> uses phantomjs to visit your specified pages and write only the used/computed styles to a file
 // iconfont	=> creates fonts from svg files
 //---
 
@@ -10,184 +10,193 @@
 // Include gulp
 var gulp = require('gulp'); 
 
+// Load all gulp plugins automatically and attach them to the `plugins` object
+var plugins = require('gulp-load-plugins')();
 
-// Include Our Plugins
-var bower        = require('gulp-bower');
-var jshint       = require('gulp-jshint');
-var less         = require('gulp-less');
-var concat       = require('gulp-concat');
-var uglify       = require('gulp-uglify');
-var rename       = require('gulp-rename');
-var minifyCSS    = require('gulp-minify-css');
-var uncss        = require('gulp-uncss');
-var del          = require('del');
-var postcss      = require('gulp-postcss'); 
-var plumber      = require('gulp-plumber'); // error handling
-var consolidate  = require('gulp-consolidate'); // icon templating
-var iconfont     = require('gulp-iconfont'); // svg to iconfont
-var livereload   = require('gulp-livereload');
-var gutil        = require('gulp-util');
-
+// Unsure how to get these to work with gulp-load-plugins
 var autoprefixer = require('autoprefixer-core');
 var mqpacker     = require('css-mqpacker');
-var csswring     = require('csswring');
 var focus 			 = require('postcss-focus');
 
-var watchJS = [
-	'_src/js/_scripts/*.js',
-	'_src/js/_*.js' 
 
-];
+var pkg = require('./package.json');
 
-var watchLESS = [
-	'_src/less/*.less',
-	'_src/less/partials/*.less',
-	'_src/less/iconfonts/*.less',
-];
+// Used for writing to directories
+var dirs = {
+	"src": "src",
+	"dist": "public",
+	"assets": "public/assets",
+}
 
-var distJS = 'assets/js';
-var distCSS = 'assets/css';
-
-
-var scriptsJS = [
-];
-
-
-// Lint Task
-gulp.task('lint', function() {
-	return gulp.src( watchJS )
-		.pipe(jshint())
-		// .pipe(jshint.reporter('default'));
-});
+// Used for getting files
+var paths = {
+	scripts: [
+		dirs.src + '/js/*.js',
+		dirs.src + '/js/scripts/*.js',
+	],
+	less: [
+		dirs.src + '/plugins.less/**/*.less',
+	],
+	views: [
+		dirs.src + '/views/**/*.php',
+		dirs.src + '/views/**/*.html',
+	],
+}
 
 
 // Concatenate & Minify JS
-gulp.task('scripts', function() {
-	return gulp.src( watchJS )
-	.pipe(plumber(function(error) {
-		gutil.log(
-			gutil.colors.red(error.message),
-			gutil.colors.yellow('\r\nOn line: '+error.line),
-			gutil.colors.yellow('\r\nCode Extract: '+error.extract)
+gulp.task('scripts', ['vendor'], function() {
+	return gulp.src( paths.scripts )
+	.pipe(plugins.plumber(function(error) {
+		plugins.util.log(
+			plugins.util.colors.red(error.message),
+			plugins.util.colors.yellow('\r\nOn line: '+error.line),
+			plugins.util.colors.yellow('\r\nCode Extract: '+error.extract)
 			);
 		this.emit('end');
 	}))
-	.pipe(concat('main.js'))
-	.pipe(gulp.dest( distJS ))
-	.pipe(uglify())
-	.pipe(rename('main.min.js'))
-	.pipe(gulp.dest( distJS ))
-	.pipe(livereload());
+	.pipe(plugins.concat('main.js'))
+	.pipe(gulp.dest( dirs.assets + '/js/' ))
+	.pipe(plugins.uglify())
+	.pipe(plugins.rename('main.min.js'))
+	.pipe(gulp.dest( dirs.assets + '/js/' ))
+	.pipe(plugins.livereload());
 });
 
-// Compile Our less
-gulp.task('less', function() {
+
+// Compile our less
+gulp.task('less', ['vendor', 'iconfont'], function() {
+	// Make sure our css is compatible with the last two versions of all browsers
+	// For all ::hover styles duplicate a ::focus style
+	// Condense mediaquery calls
 	var processors = [
 		autoprefixer({browsers: ['last 2 version']}),
 		focus,
 		mqpacker,
-		csswring
 	];
 
-	return gulp.src( '_src/less/main.less' )
-	.pipe(plumber(function(error) {
-		gutil.log(
-			gutil.colors.red(error.message),
-			gutil.colors.yellow('\r\nOn line: '+error.line),
-			gutil.colors.yellow('\r\nCode Extract: '+error.extract)
+	return gulp.src( 'src/less/main.less' )
+	.pipe(plugins.plumber(function(error) {
+		plugins.util.log(
+			plugins.util.colors.red(error.message),
+			plugins.util.colors.yellow('\r\nOn line: '+error.line),
+			plugins.util.colors.yellow('\r\nCode Extract: '+error.extract)
 			);
 		this.emit('end');
 	}))
-	.pipe(less())
-	.pipe(minifyCSS())
-	.pipe(postcss( processors ))
-	.pipe(rename('main.min.css'))
-	.pipe(gulp.dest( distCSS ))
-	.pipe(livereload());
+	.pipe(plugins.less())
+	.pipe(plugins.postcss( processors ))
+	.pipe(plugins.minifyCss())
+	.pipe(plugins.rename('main.min.css'))
+	.pipe(gulp.dest( dirs.assets + '/css/' ))
+	.pipe(plugins.livereload());
 });
 
 
 // Use PhantomJS to UnCSS
-// gulp.task('uncss', ['less'], function() {
-// 	return gulp.src( unCSS )
-// 	.pipe(concat('uncss.css'))
-// 	.pipe(gulp.dest( distCSS ))
-// 	.pipe(uncss({
-// 		html: [
-// 		'http://website.local/',
-// 		],
-// 		ignore: [
-// 			/hover/,
-// 			/click/,
-// 			/focus/,
-// 			/active/,
-// 			// needed for Bootstraps transitions
-// 			/\.open/,
-// 			/\.open+/,
-// 			/\.fade/,
-// 			/\.fade+/,
-// 			/\.collapse/,
-// 			/\.collapse+/,
-// 			/\.alert-danger/,
-// 			]
-// 		}))
-// 	.pipe(minifyCSS({keepSpecialComments:0}))
-// 	.pipe(rename('uncss.min.css'))
-// 	.pipe(gulp.dest( distCSS ));
-// });
+gulp.task('uncss', ['less'], function() {
+	return gulp.src( paths.css )
+	.pipe(plugins.concat('uncss.css'))
+	// for debugging only
+	// .pipe(gulp.dest( dirs.assets + '/css/' ))
+	.pipe(plugins.uncss({
+		// provide the pages you would like phantomjs to scan for styles
+		html: [
+			'http://website.local/',
+		],
+		// styles to include regardless if phantomjs finds them on those pages
+		// hover, click, focus, active are common offendors
+		ignore: [
+			// /hover/,
+			// /click/,
+			// /focus/,
+			// /active/,
+
+			// needed for Bootstraps transitions
+			/\.open/,
+			/\.open+/,
+			/\.fade/,
+			/\.fade+/,
+			/\.collapse/,
+			/\.collapse+/,
+			/\.alert-danger/,
+		]
+	}))
+	.pipe(plugins.minifyCSS({keepSpecialComments:0}))
+	.pipe(plugins.rename('uncss.min.css'))
+	.pipe(gulp.dest( dirs.assets + '/css/' ));
+});
 
 
-gulp.task('iconfont', function(){
-	return gulp.src(['_src/icons/svg/*.svg'])
-		.pipe(iconfont({ fontName: 'website-icons' }))
-		.on('codepoints', function(codepoints, options) {
-			gulp.src('_src/icons/iconfont.template')
-				.pipe(consolidate('lodash', {
+// Compile our font icons
+gulp.task('iconfont', ['vendor'], function(){
+	// rename font if you want it to be something more specific
+	var fontname = 'website-icons';
+	// class name, dash will be added to the end ex: icon-
+	var classname = 'icon';
+
+	return gulp.src([dirs.src + '/icons/svg/*.svg'])
+		.pipe(plugins.iconfont({ 
+			fontName: fontname 
+		}))
+		.on('codepoints', function (codepoints, options) {
+			// uncomment if you want to be garaunteed that you icons will have the same UTF code
+			// codepoints.forEach(function (glyph, idx, arr) {
+			// 	arr[idx].codepoint = glyph.codepoint.toString(16);
+			// });
+			gulp.src(dirs.src + '/icons/iconfont.template')
+				.pipe(plugins.consolidate('lodash', {
 					glyphs: codepoints,
-					fontName: 'website-icons',
-					fontPath: '/assets/fonts/',
-					className: 'icon'
+					fontName: fontname,
+					fontPath: '../fonts/',
+					className: classname
 				}))
-				.pipe(rename('_iconfont.less'))
-				.pipe(gulp.dest('_src/less/iconfonts/'));
-	})
-	.pipe(gulp.dest('assets/fonts/'));
+				.pipe(plugins.rename('iconfont.less'))
+				.pipe(gulp.dest( dirs.src + '/less/iconfonts' ));
+		})
+		.pipe(gulp.dest( dirs.assets + '/fonts' ));
 });
 
 
 // Bower Update Task
 gulp.task('bower', function() {
-	return bower();
+	return plugins.bower();
 });
 
 
 // Migrate Vendor Dependencies 
 gulp.task('vendor',['bower'], function() {
 
+	//
+	gulp.src( 'src/vendor/bootstrap/dist/js/bootstrap.min.js' )
+	.pipe(gulp.dest( dirs.assets + '/js/plugins' ));
 
 	//
-	gulp.src( scriptsJS )
-	.pipe(gulp.dest( '_src/js/_scripts'));
+	gulp.src( 'src/vendor/bootstrap/less/**/*' )
+	.pipe(gulp.dest( 'src/less/vendor/bootstrap' ));
 
 	//
-	gulp.src( '_src/vendor/bootstrap/dist/js/bootstrap.min.js' )
-	.pipe(gulp.dest( 'assets/js/plugins' ));
+	gulp.src( 'src/vendor/jquery/dist/jquery.min.js' )
+	.pipe(gulp.dest( dirs.assets + '/js/plugins' ));
 
 	//
-	gulp.src( '_src/vendor/bootstrap/less/*' )
-	.pipe(gulp.dest( '_src/less/vendor/bootstrap' ));
-
-	//
-	gulp.src( '_src/vendor/jquery/dist/jquery.min.js' )
-	.pipe(gulp.dest( 'assets/js/plugins' ));
-
+	gulp.src( 'src/vendor/modernizr/modernizr.js' )
+	.pipe(gulp.dest( dirs.assets + '/js/plugins' ));
 
 });
 
 
 // Watch Files For Changes
 gulp.task('watch', function() {
-	livereload.listen();
-	gulp.watch( watchJS , ['lint', 'scripts']);
-	gulp.watch( watchLESS , ['less']);
+	plugins.livereload.listen();
+	gulp.watch( paths.scripts , ['scripts']);
+	gulp.watch( paths.less , ['less']);
+	gulp.watch(paths.views).on('change', function (file) {
+		plugins.livereload(file);
+	});
 });
+
+// Init our files
+gulp.task('init', ['vendor', 'iconfont', 'less', 'scripts']);
+
+gulp.task('default', ['scripts', 'less', 'watch']);

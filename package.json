@@ -1,10 +1,10 @@
 {
-  "name": "LoveCommPolitical",
-  "version": "1.0.0",
+  "name": "flatboiler",
+  "version": "1.1.0",
   "authors": [
-    "Ben Smith <bsmith@lovecomm.net>"
+    "Ben Smith <benwsmith@gmail.com>"
   ],
-  "description": "LoveComm Political",
+  "description": "Flatboiler Scaffold",
   "license": "MIT",
   "private": true,
   "devDependencies": {
@@ -28,7 +28,8 @@
     "gulp-uncss": "^1.0.0",
     "gulp-util": "^3.0.4",
     "lodash": "^3.3.1",
-    "postcss": "^4.1.11",
-    "postcss-focus": "^0.1.1"
-  },
+    "gulp-postcss": "^5.1.8",
+    "postcss-focus": "^0.1.1",
+    "gulp-load-plugins": "^1.0.0-rc.1"
+  }
 }
