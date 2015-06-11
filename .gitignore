@@ -1,5 +1,8 @@
-bower_componenets
-
 // npm and bower
+bower_componenets
 node_modules
 vendor
+
+// Ignore build directories
+public
+build
