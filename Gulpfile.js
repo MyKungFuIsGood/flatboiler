@@ -35,17 +35,17 @@ var paths = {
 		dirs.src + '/js/scripts/*.js',
 	],
 	less: [
-		dirs.src + '/plugins.less/**/*.less',
+		dirs.src + '/less/**/*.less',
 	],
 	views: [
-		dirs.src + '/views/**/*.php',
-		dirs.src + '/views/**/*.html',
+		dirs.dist + '/views/**/*.php',
+		dirs.dist + '/views/**/*.html',
 	],
 }
 
 
 // Concatenate & Minify JS
-gulp.task('scripts', ['vendor'], function() {
+gulp.task('scripts', function() {
 	return gulp.src( paths.scripts )
 	.pipe(plugins.plumber(function(error) {
 		plugins.util.log(
@@ -65,7 +65,7 @@ gulp.task('scripts', ['vendor'], function() {
 
 
 // Compile our less
-gulp.task('less', ['vendor', 'iconfont'], function() {
+gulp.task('less', function() {
 	// Make sure our css is compatible with the last two versions of all browsers
 	// For all ::hover styles duplicate a ::focus style
 	// Condense mediaquery calls
@@ -129,7 +129,7 @@ gulp.task('uncss', ['less'], function() {
 
 
 // Compile our font icons
-gulp.task('iconfont', ['vendor'], function(){
+gulp.task('iconfont', function(){
 	// rename font if you want it to be something more specific
 	var fontname = 'website-icons';
 	// class name, dash will be added to the end ex: icon-
@@ -191,12 +191,15 @@ gulp.task('watch', function() {
 	plugins.livereload.listen();
 	gulp.watch( paths.scripts , ['scripts']);
 	gulp.watch( paths.less , ['less']);
-	gulp.watch(paths.views).on('change', function (file) {
-		plugins.livereload(file);
+	gulp.watch(paths.views).on('change', function (event) {
+		plugins.livereload.changed(event.path);
 	});
 });
 
 // Init our files
-gulp.task('init', ['vendor', 'iconfont', 'less', 'scripts']);
+gulp.task('init', ['vendor', 'iconfont'], function (event) {
+	gulp.run('scripts');
+	gulp.run('less');
+});
 
 gulp.task('default', ['scripts', 'less', 'watch']);
